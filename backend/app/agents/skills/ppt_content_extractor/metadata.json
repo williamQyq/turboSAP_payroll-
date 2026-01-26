@@ -1,0 +1,109 @@
+{
+  "skill": {
+    "id": "ppt_content_extractor",
+    "name": "PPT Content Extractor (Enhanced)",
+    "version": "1.1.0",
+    "description": "Extracts PowerPoint content from S3 using Unstructured.io for coordinate-based ordering and semantic classification.",
+    "author": "TurboSAP Team",
+    "created_date": "2024-01-24"
+  },
+  "capabilities": {
+    "supported_operations": [
+      "extract_full_content",
+      "coordinate_aware_text_extraction",
+      "semantic_element_classification",
+      "extract_metadata",
+      "get_slide_summary"
+    ],
+    "features": [
+      "Reading order optimization (Top-to-Bottom, Left-to-Right)",
+      "Element labeling (Title, NarrativeText, ListItem, Footer)",
+      "Speaker notes extraction"
+    ],
+    "supported_file_types": [
+      {
+        "extension": ".pptx",
+        "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      }
+    ]
+  },
+  "dependencies": {
+    "python_packages": [
+      {
+        "name": "unstructured",
+        "version": ">=0.10.0",
+        "description": "Used for coordinate-based partitioning and layout analysis"
+      },
+      {
+        "name": "python-pptx",
+        "version": ">=0.6.21"
+      }
+    ],
+    "internal_modules": [
+      {
+        "module": "app.services.knowledgebase.KnowledgebaseDownloadService",
+        "purpose": "S3 Data Retrieval"
+      }
+    ]
+  },
+  "input_schema": {
+    "type": "object",
+    "required": ["object_key"],
+    "properties": {
+      "object_key": {
+        "type": "string",
+        "description": "S3 object key (format: company/code/file.pptx)",
+        "pattern": "^[^/]+/[^/]+/.*\\.pptx$"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "success": { "type": "boolean" },
+      "slide_count": { "type": "integer" },
+      "metadata": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "slide_count": { "type": "integer" }
+        }
+      },
+      "slides": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "slide_number": { "type": "integer" },
+            "title": { "type": "string" },
+            "text_content": { 
+              "type": "string", 
+              "description": "Text ordered by visual coordinates" 
+            },
+            "elements": {
+              "type": "array",
+              "description": "Raw elements with categories",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "text": { "type": "string" },
+                  "category": { "type": "string", "description": "e.g., Title, NarrativeText, ListItem" }
+                }
+              }
+            },
+            "speaker_notes": { "type": "string" }
+          }
+        }
+      },
+      "full_text": {
+        "type": "string",
+        "description": "Ordered text from all slides with [CATEGORY] tags for RAG optimization"
+      }
+    }
+  },
+  "performance": {
+    "extraction_strategy": "Coordinate-based Layout Analysis (Unstructured.io)",
+    "sorting_logic": "Top-to-Bottom, Left-to-Right",
+    "recommended_usage": "Ideal for complex RAG where reading order and element context are critical"
+  }
+}
