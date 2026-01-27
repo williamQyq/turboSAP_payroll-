@@ -1,0 +1,14 @@
+{
+  "slug": "payment-methodssss",
+  "name": "Payment Methodssss",
+  "description": "",
+  "category": null,
+  "icon": "box",
+  "status": "active",
+  "order": 999,
+  "version": "1.0",
+  "createdAt": "2026-01-26T22:23:53.719482",
+  "createdBy": "admin123",
+  "updatedAt": "2026-01-26T22:26:14.148084",
+  "updatedBy": "admin123"
+}

@@ -14,15 +14,19 @@ Endpoints:
 """
 
 import json
+import logging
 import shutil
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
-from fastapi import APIRouter, Depends, HTTPException, Body
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, Body, Depends, HTTPException
 
 from ..middleware import get_current_user, require_admin
+from ..services.config_store import config_store, ConfigStoreError
+from ..services.question_validator import validate_questions_config
 
-from datetime import datetime
-from typing import List, Dict, Any, Optional
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/config/modules", tags=["Module Config"])
 
@@ -30,32 +34,107 @@ router = APIRouter(prefix="/api/config/modules", tags=["Module Config"])
 APP_DIR = Path(__file__).parent.parent
 CONFIG_DIR = APP_DIR / "config"
 DATA_DIR = APP_DIR / "data"
-MODULES_METADATA_PATH = DATA_DIR / "modules_metadata.json"
+
+# New paths (post-migration)
+MODULES_DIR = DATA_DIR / "modules"
+METADATA_DIR = DATA_DIR / "metadata"
+
+# Metadata paths - check new location first, fall back to old
+def _get_modules_metadata_path() -> Path:
+    """Get the modules metadata path, supporting both old and new locations."""
+    new_path = METADATA_DIR / "modules.json"
+    old_path = DATA_DIR / "modules_metadata.json"
+    if new_path.exists():
+        return new_path
+    return old_path
+
+MODULES_METADATA_PATH = _get_modules_metadata_path()
+
+
+def _get_module_paths(slug: str) -> dict:
+    """
+    Get file paths for a module, supporting both old and new locations.
+
+    Returns dict with 'current', 'backup', 'original' paths.
+    Checks new locations first, falls back to old locations.
+    """
+    # New paths (post-migration structure)
+    new_paths = {
+        "payment-methods": {
+            "current": MODULES_DIR / "payment-methods" / "questions.json",
+            "backup": MODULES_DIR / "payment-methods" / "questions_backup.json",
+            "original": None,
+        },
+        "payroll-area": {
+            "current": MODULES_DIR / "payroll-area" / "questions.json",
+            "backup": MODULES_DIR / "payroll-area" / "questions_backup.json",
+            "original": MODULES_DIR / "payroll-area" / "questions_original.json",
+        },
+    }
+
+    # Old paths (legacy structure)
+    old_paths = {
+        "payment-method": {
+            "current": DATA_DIR / "payment_method_questions.json",
+            "backup": DATA_DIR / "payment_method_questions_backup.json",
+            "original": None,
+        },
+        "payroll-area": {
+            "current": CONFIG_DIR / "questions_current.json",
+            "backup": CONFIG_DIR / "questions_backup.json",
+            "original": CONFIG_DIR / "questions_original.json",
+        },
+    }
+
+    # Normalize slug (payment-method and payment-methods are the same)
+    normalized_slug = slug
+    if slug == "payment-method":
+        normalized_slug = "payment-methods"
+
+    # Check new paths first
+    if normalized_slug in new_paths:
+        new = new_paths[normalized_slug]
+        if new["current"].exists():
+            return new
+
+    # Fall back to old paths
+    # Try with original slug first
+    if slug in old_paths:
+        old = old_paths[slug]
+        if old["current"].exists():
+            return old
+
+    # For custom modules, use new structure
+    module_dir = MODULES_DIR / slug
+    return {
+        "current": module_dir / "questions.json",
+        "backup": module_dir / "questions_backup.json",
+        "original": None,
+    }
+
 
 # File paths registry - maps slugs to question file locations
+# This is kept for backward compatibility but now uses _get_module_paths()
 # Separate from metadata (name/description) which is stored in modules_metadata.json
 MODULE_FILES = {
-    "payment-method": {
-        "current": DATA_DIR / "payment_method_questions.json",
-        "backup": DATA_DIR / "payment_method_questions_backup.json",
-        "original": None,
-    },
-    "payroll-area": {
-        "current": CONFIG_DIR / "questions_current.json",
-        "backup": CONFIG_DIR / "questions_backup.json",
-        "original": CONFIG_DIR / "questions_original.json",
-    },
+    "payment-method": _get_module_paths("payment-method"),
+    "payroll-area": _get_module_paths("payroll-area"),
 }
 
 def _load_modules_metadata() -> Dict[str, Any]:
     """Load module metadata from JSON file."""
     base = {"version": "1.0", "modules": {}, "categories": {}}
-    if not MODULES_METADATA_PATH.exists():
+
+    # Try new location first, fall back to old
+    metadata_path = _get_modules_metadata_path()
+
+    if not metadata_path.exists():
         return base
     try:
-        with MODULES_METADATA_PATH.open() as f:
+        with metadata_path.open() as f:
             data = json.load(f)
     except json.JSONDecodeError:
+        logger.warning(f"Invalid JSON in modules metadata file: {metadata_path}")
         return base
 
     # Ensure expected top-level keys exist
@@ -70,8 +149,10 @@ def _load_modules_metadata() -> Dict[str, Any]:
 
 def _save_modules_metadata(data: Dict[str, Any]) -> None:
     """Save module metadata to JSON file."""
-    MODULES_METADATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with MODULES_METADATA_PATH.open("w") as f:
+    # Get current metadata path (prefers new location if it exists)
+    metadata_path = _get_modules_metadata_path()
+    metadata_path.parent.mkdir(parents=True, exist_ok=True)
+    with metadata_path.open("w") as f:
         json.dump(data, f, indent=2)
 
 
@@ -161,28 +242,39 @@ def _validate_questions_schema(data: Dict[str, Any], module_slug: str) -> None:
 
 def _get_module_files(slug: str) -> dict:
     """Get module file paths or raise 404."""
-    # First check if it's a pre-made module
+    # Get paths using the helper that supports old and new locations
+    paths = _get_module_paths(slug)
+
+    # If the current file exists, return the paths
+    if paths["current"].exists():
+        # Cache in MODULE_FILES for this session
+        MODULE_FILES[slug] = paths
+        return paths
+
+    # Check if it's in MODULE_FILES already (for built-in modules)
     if slug in MODULE_FILES:
-        return MODULE_FILES[slug]
-    
+        cached = MODULE_FILES[slug]
+        if cached["current"].exists():
+            return cached
+
     # If not in MODULE_FILES, check if it's a custom module in metadata
     metadata = _load_modules_metadata()
     if slug in metadata.get("modules", {}):
-        # Create file paths for custom module
-        module_dir = DATA_DIR / slug
-        module_dir.mkdir(exist_ok=True)
-        
+        # Create file paths for custom module using new structure
+        module_dir = MODULES_DIR / slug
+        module_dir.mkdir(parents=True, exist_ok=True)
+
         # Define file paths for the custom module
         files = {
             "current": module_dir / "questions.json",
             "backup": module_dir / "questions_backup.json",
             "original": None
         }
-        
+
         # Add to MODULE_FILES for this session
         MODULE_FILES[slug] = files
         return files
-    
+
     # If we get here, the module doesn't exist
     available = ", ".join(MODULE_FILES.keys())
     raise HTTPException(
@@ -416,8 +508,18 @@ async def update_module_questions(
     # Remove metadata if present (frontend might send it back)
     payload.pop("_meta", None)
 
-    # Validate schema
+    # Validate schema (blocking validation)
     _validate_questions_schema(payload, module_slug)
+
+    # Run additional validation (non-blocking - logs warnings only)
+    validation_result = validate_questions_config(payload, module_slug)
+    if validation_result.warnings:
+        for warning in validation_result.warnings:
+            logger.warning(warning)
+    if validation_result.errors:
+        # Log errors but don't block (for backward compatibility)
+        for error in validation_result.errors:
+            logger.error(f"Validation error (non-blocking): {error}")
 
     try:
         # Create backup of current file if it exists
@@ -590,8 +692,8 @@ async def create_module(
             all_orders = [m.get('order', 0) for m in all_modules.values()]
             payload['order'] = max(all_orders) + 1 if all_orders else 1
         
-        # Create module directory
-        module_dir = DATA_DIR / slug
+        # Create module directory (use new structure under modules/)
+        module_dir = MODULES_DIR / slug
         module_dir.mkdir(exist_ok=True, parents=True)
         
         # Create new module metadata

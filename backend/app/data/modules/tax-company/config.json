@@ -1,0 +1,12 @@
+{
+  "slug": "tax-company",
+  "name": "Tax Company",
+  "description": "",
+  "category": null,
+  "icon": "box",
+  "status": "draft",
+  "order": 999,
+  "version": "1.0",
+  "createdAt": "2026-01-26T06:47:16.499110",
+  "createdBy": "admin123"
+}

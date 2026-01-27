@@ -21,6 +21,7 @@ import {
   Layers,
   Sparkles,
   Building2,
+  Package,
 } from 'lucide-react';
 
 const navItems = [
@@ -29,6 +30,7 @@ const navItems = [
   { icon: Building2, label: 'Company Codes', href: '/company-code', key: 'companyCodes' },
   { icon: Calendar, label: 'Payroll Areas', href: '/payroll-area', key: 'payrollAreas' },
   { icon: CreditCard, label: 'Payment Methods', href: '/payment-methods', key: 'paymentMethods' },
+  { icon: Package, label: 'Config Modules', href: '/modules', key: 'modules', isNew: true },
   { icon: Layers, label: 'All Modules', href: '/scope', key: 'scope' },
   { icon: Download, label: 'Export Center', href: '/export', key: 'export' },
   // { icon: Network, label: 'Codebase', href: '/viz', key: 'viz' }, // temporarily disabled
@@ -56,7 +58,7 @@ export function Sidebar({ currentPath }: SidebarProps) {
     if (isNew) {
       return <span className="px-1.5 py-0.5 text-[10px] font-bold bg-violet-500 text-white rounded">NEW</span>;
     }
-    if (key === 'dashboard' || key === 'export' || key === 'scope' || key === 'aiConfig') return null;
+    if (key === 'dashboard' || key === 'export' || key === 'scope' || key === 'aiConfig' || key === 'modules') return null;
 
     // Map key to actual status from useExportData (simplified: complete or not-started)
     let status: 'complete' | 'not-started' = 'not-started';

@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "questions": [
+    {
+      "text": "What are the payment methods your company uses?",
+      "type": "multi_select",
+      "options": [
+        {
+          "value": "p",
+          "label": "Physical Check"
+        },
+        {
+          "value": "m",
+          "label": "Manual / Off Cycle Check"
+        },
+        {
+          "value": "d",
+          "label": "Direct Deposit"
+        }
+      ],
+      "id": "q_e7943e0e",
+      "order": 1
+    },
+    {
+      "text": "What is your primary bank's ACH account number?",
+      "type": "number",
+      "showIf": {
+        "questionId": "q_e7943e0e",
+        "equals": "d"
+      },
+      "id": "q_05777532",
+      "order": 2
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-01-26T20:36:56.613260",
+    "createdBy": "admin123",
+    "lastModified": "2026-01-26T20:40:29.792370"
+  }
+}

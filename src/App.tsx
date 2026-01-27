@@ -23,6 +23,10 @@ import { PaymentMethodConfigPage } from './pages/admin/PaymentMethodConfigPage';
 import { PayrollAreaConfigPage } from './pages/admin/PayrollAreaConfigPage';
 import { ConfigurationManagementPage } from './pages/admin/ConfigurationManagementPage';
 import { DocumentsPage } from './pages/admin/DocumentsPage';
+import { ModulesPage } from './pages/admin/ModulesPage';
+import { ModuleEditorPage } from './pages/admin/ModuleEditorPage';
+import { ModulesListPage } from './pages/ModulesListPage';
+import { ModuleSessionPage } from './pages/ModuleSessionPage';
 import { AuthPage, ProtectedRoute } from './components/auth';
 import { useAuthStore } from './store/auth';
 import { getCurrentUser } from './api/auth';
@@ -121,6 +125,24 @@ function AppContent() {
         }
       />
 
+      {/* Config-driven Modules - User-facing */}
+      <Route
+        path="/modules"
+        element={
+          <ProtectedRoute requireClient>
+            <ModulesListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/modules/:slug"
+        element={
+          <ProtectedRoute requireClient>
+            <ModuleSessionPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Codebase Visualization - temporarily disabled (untracked files)
       <Route
         path="/viz"
@@ -176,15 +198,23 @@ function AppContent() {
           </ProtectedRoute>
         }
       />
-      {/* TODO: Re-enable when /admin/modules page is fixed */}
-      {/* <Route
+      {/* Config-driven Modules - Admin CRUD */}
+      <Route
         path="/admin/modules"
         element={
           <ProtectedRoute requireAdmin>
-            <QuestionsConfigPage />
+            <ModulesPage />
           </ProtectedRoute>
         }
-      /> */}
+      />
+      <Route
+        path="/admin/modules/:slug"
+        element={
+          <ProtectedRoute requireAdmin>
+            <ModuleEditorPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/admin/settings"
         element={

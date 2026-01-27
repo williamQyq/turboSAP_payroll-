@@ -1,0 +1,127 @@
+{
+  "version": "1.0",
+  "questions": [
+    {
+      "id": "q_bank_name",
+      "text": "What is your company's primary bank?",
+      "type": "text",
+      "order": 1,
+      "helpText": "Enter the full legal name of your banking institution",
+      "outputMapping": {
+        "file": "bank_details.csv",
+        "column": "BankName",
+        "transform": "direct"
+      }
+    },
+    {
+      "id": "q_account_type",
+      "text": "What type of account is this?",
+      "type": "single_select",
+      "order": 2,
+      "options": [
+        {
+          "value": "checking",
+          "label": "Checking",
+          "description": "Standard business checking account"
+        },
+        {
+          "value": "savings",
+          "label": "Savings",
+          "description": "Business savings account"
+        },
+        {
+          "value": "money_market",
+          "label": "Money Market",
+          "description": "Money market account"
+        }
+      ],
+      "outputMapping": {
+        "file": "bank_details.csv",
+        "column": "AccountType",
+        "transform": "value_lookup",
+        "valueMap": {
+          "checking": "CHK",
+          "savings": "SAV",
+          "money_market": "MMA"
+        }
+      }
+    },
+    {
+      "id": "q_direct_deposit",
+      "text": "Does this account accept direct deposits?",
+      "type": "yes_no",
+      "order": 3,
+      "helpText": "Select Yes if employees can receive direct deposit to this account",
+      "outputMapping": {
+        "file": "bank_details.csv",
+        "column": "DirectDeposit",
+        "transform": "yes_no"
+      }
+    },
+    {
+      "id": "q_routing_number",
+      "text": "What is the routing number?",
+      "type": "text",
+      "order": 4,
+      "helpText": "9-digit ABA routing number",
+      "showIf": {
+        "questionId": "q_direct_deposit",
+        "equals": "yes"
+      },
+      "outputMapping": {
+        "file": "bank_details.csv",
+        "column": "RoutingNumber",
+        "transform": "direct"
+      }
+    },
+    {
+      "id": "q_account_number",
+      "text": "What is the account number?",
+      "type": "text",
+      "order": 5,
+      "helpText": "Your business account number",
+      "showIf": {
+        "questionId": "q_direct_deposit",
+        "equals": "yes"
+      },
+      "outputMapping": {
+        "file": "bank_details.csv",
+        "column": "AccountNumber",
+        "transform": "direct"
+      }
+    },
+    {
+      "id": "q_payment_methods",
+      "text": "Which payment methods will use this bank account?",
+      "type": "multi_select",
+      "order": 6,
+      "options": [
+        {
+          "value": "ach",
+          "label": "ACH Direct Deposit",
+          "description": "Electronic transfers via ACH network"
+        },
+        {
+          "value": "wire",
+          "label": "Wire Transfer",
+          "description": "Same-day wire transfers"
+        },
+        {
+          "value": "check",
+          "label": "Physical Checks",
+          "description": "Paper check printing"
+        }
+      ],
+      "outputMapping": {
+        "file": "payment_methods.csv",
+        "column": "PaymentMethod",
+        "transform": "row_per_selected"
+      }
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-01-25T00:00:00Z",
+    "createdBy": "system",
+    "description": "Test module demonstrating various question types and output mappings"
+  }
+}

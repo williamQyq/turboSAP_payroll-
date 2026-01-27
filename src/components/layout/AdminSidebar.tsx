@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Terminal,
   FileUp,
+  Package,
 } from 'lucide-react';
 
 const adminNavItems = [
@@ -25,6 +26,7 @@ const adminNavItems = [
   { icon: Users, label: 'Users', href: '/admin/users', key: 'users' },
   { icon: Layers, label: 'Categories', href: '/admin/categories', key: 'categories' },
   { icon: Boxes, label: 'Configuration', href: '/admin/config', key: 'config' },
+  { icon: Package, label: 'Modules', href: '/admin/modules', key: 'modules' },
   { icon: FileUp, label: 'Documents', href: '/admin/documents', key: 'documents' },
   { icon: Terminal, label: 'Console', href: '/admin/console', key: 'console' },
   { icon: Settings, label: 'Settings', href: '/admin/settings', key: 'settings' },

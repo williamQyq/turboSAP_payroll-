@@ -1,0 +1,12 @@
+{
+  "slug": "bank-details",
+  "name": "Bank Details",
+  "description": "Configure company banking information for payroll processing",
+  "category": "banking",
+  "icon": "landmark",
+  "status": "active",
+  "order": 10,
+  "version": "1.0",
+  "createdAt": "2026-01-25T00:00:00Z",
+  "createdBy": "system"
+}

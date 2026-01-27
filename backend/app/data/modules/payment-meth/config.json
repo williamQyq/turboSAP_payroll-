@@ -1,0 +1,14 @@
+{
+  "slug": "payment-meth",
+  "name": "Payment Meth",
+  "description": "",
+  "category": null,
+  "icon": "box",
+  "status": "active",
+  "order": 999,
+  "version": "1.0",
+  "createdAt": "2026-01-26T20:36:56.613260",
+  "createdBy": "admin123",
+  "updatedAt": "2026-01-26T20:38:58.897813",
+  "updatedBy": "admin123"
+}

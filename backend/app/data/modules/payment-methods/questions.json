@@ -1,0 +1,132 @@
+{
+  "version": "1.0",
+  "questions": [
+    {
+      "id": "q1_payment_method_p",
+      "text": "Q1. Is your enterprise payment method P - Direct Deposit ACH?",
+      "type": "multiple_choice",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "description": "Your enterprise uses Direct Deposit ACH (code P)."
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "description": "Your enterprise does not use Direct Deposit ACH (code P)."
+        }
+      ]
+    },
+
+    {
+      "id": "q1_p_house_banks",
+      "text": "Please list the house bank names used for ACH payments.",
+      "type": "free_text",
+      "showIf": {
+        "questionId": "q1_payment_method_p",
+        "answerId": "yes"
+      }
+    },
+
+    {
+      "id": "q1_p_ach_spec",
+      "text": "Please provide the ACH file specification used by your bank.",
+      "type": "free_text",
+      "showIf": {
+        "questionId": "q1_payment_method_p",
+        "answerId": "yes"
+      }
+    },
+
+    {
+      "id": "q2_payment_method_q",
+      "text": "Q2. Is your enterprise payment method Q - Physical Check?",
+      "type": "multiple_choice",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "description": "Your enterprise uses Physical Checks (code Q)."
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "description": "Your enterprise does not use Physical Checks (code Q)."
+        }
+      ]
+    },
+
+    {
+      "id": "q2_q_volume",
+      "text": "What is the volume of your physical payroll checks?",
+      "type": "free_text",
+      "showIf": {
+        "questionId": "q2_payment_method_q",
+        "answerId": "yes"
+      }
+    },
+
+    {
+      "id": "q2_q_check_range",
+      "text": "Please provide the check number range used for physical checks.",
+      "type": "free_text",
+      "showIf": {
+        "questionId": "q2_payment_method_q",
+        "answerId": "yes"
+      }
+    },
+
+    {
+      "id": "q3_payment_method_k",
+      "text": "Q3. Is your enterprise payment method K - Pay Card (Debit Card)?",
+      "type": "multiple_choice",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "description": "Your enterprise uses Pay Cards / Debit Cards (code K)."
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "description": "Your enterprise does not use Pay Cards / Debit Cards (code K)."
+        }
+      ]
+    },
+
+    {
+      "id": "q4_payment_method_m",
+      "text": "Q4. Is your enterprise payment method M - Manual / Off-cycle Check?",
+      "type": "multiple_choice",
+      "options": [
+        {
+          "id": "yes",
+          "label": "Yes",
+          "description": "Your enterprise uses Manual / Off-cycle Checks (code M)."
+        },
+        {
+          "id": "no",
+          "label": "No",
+          "description": "Your enterprise does not use Manual / Off-cycle Checks (code M)."
+        }
+      ]
+    },
+
+    {
+      "id": "q5_pre_note_confirmation",
+      "text": "We recommend NOT to have the pre-note process. There is a check replacement process that can be used if the bank transfer fails due to an invalid bank account. Please confirm you agree NOT to have the pre-note process with SAP.",
+      "type": "multiple_choice",
+      "options": [
+        {
+          "id": "agree",
+          "label": "Yes, I confirm we will not use the pre-note process."
+        },
+        {
+          "id": "disagree",
+          "label": "No, we prefer to retain the pre-note process."
+        }
+      ]
+    }
+  ]
+}

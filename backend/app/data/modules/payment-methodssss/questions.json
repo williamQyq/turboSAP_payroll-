@@ -1,0 +1,45 @@
+{
+  "version": "1.0",
+  "questions": [
+    {
+      "text": "What is your favorite ruit?",
+      "type": "multi_select",
+      "options": [
+        {
+          "value": "a",
+          "label": "Apple"
+        },
+        {
+          "value": "p",
+          "label": "Pear"
+        },
+        {
+          "value": "l",
+          "label": "Lemon"
+        }
+      ],
+      "outputMapping": {
+        "file": "fruit_choices.csv",
+        "column": "Fruit",
+        "transform": "yes_no"
+      },
+      "id": "q_1269510d",
+      "order": 1
+    },
+    {
+      "text": "How many apples do you eat per day?",
+      "type": "number",
+      "showIf": {
+        "questionId": "q_1269510d",
+        "equals": "a"
+      },
+      "id": "q_ac6bc4b4",
+      "order": 2
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-01-26T22:23:53.719482",
+    "createdBy": "admin123",
+    "lastModified": "2026-01-26T22:26:05.466424"
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "version": "1.0",
+  "questions": [
+    {
+      "id": "q1_frequencies",
+      "text": "What pay frequencies does your company use?",
+      "type": "multiple_select",
+      "options": [
+        {
+          "id": "weekly",
+          "label": "Weekly",
+          "description": "Employees paid every week"
+        },
+        {
+          "id": "biweekly",
+          "label": "Bi-weekly",
+          "description": "Employees paid every two weeks"
+        },
+        {
+          "id": "semimonthly",
+          "label": "Semi-monthly",
+          "description": "Employees paid twice per month (e.g., 1st-15th, 16th-end)"
+        },
+        {
+          "id": "monthly",
+          "label": "Monthly",
+          "description": "Employees paid once per month"
+        }
+      ]
+    },
+    {
+      "id": "q1_weekly_pattern",
+      "text": "For WEEKLY payroll, what pay periods do you use?",
+      "type": "multiple_select",
+      "showIf": {
+        "questionId": "q1_frequencies",
+        "answerId": "weekly"
+      },
+      "options": [
+        {
+          "id": "mon-sun",
+          "label": "Monday to Sunday",
+          "description": "Work week starts Monday"
+        },
+        {
+          "id": "sun-sat",
+          "label": "Sunday to Saturday",
+          "description": "Work week starts Sunday"
+        }
+      ]
+    },
+    {
+      "id": "q1_weekly_payday",
+      "text": "For WEEKLY payroll, what pay days do you use?",
+      "type": "multiple_select",
+      "showIf": {
+        "questionId": "q1_frequencies",
+        "answerId": "weekly"
+      },
+      "options": [
+        {
+          "id": "friday",
+          "label": "Friday",
+          "description": "Paid on Friday following the pay period"
+        },
+        {
+          "id": "thursday",
+          "label": "Thursday",
+          "description": "Paid on Thursday following the pay period"
+        },
+        {
+          "id": "wednesday",
+          "label": "Wednesday",
+          "description": "Paid on Wednesday following the pay period"
+        }
+      ]
+    },
+    {
+      "id": "q1_biweekly_pattern",
+      "text": "For BI-WEEKLY payroll, what pay periods do you use?",
+      "type": "multiple_select",
+      "showIf": {
+        "questionId": "q1_frequencies",
+        "answerId": "biweekly"
+      },
+      "options": [
+        {
+          "id": "sun-sat",
+          "label": "Sunday to Saturday",
+          "description": "Two-week period starting Sunday"
+        },
+        {
+          "id": "mon-sun",
+          "label": "Monday to Sunday",
+          "description": "Two-week period starting Monday"
+        }
+      ]
+    },
+    {
+      "id": "q1_biweekly_payday",
+      "text": "For BI-WEEKLY payroll, what pay days do you use?",
+      "type": "multiple_select",
+      "showIf": {
+        "questionId": "q1_frequencies",
+        "answerId": "biweekly"
+      },
+      "options": [
+        {
+          "id": "friday",
+          "label": "Friday",
+          "description": "Paid on Friday following the pay period"
+        },
+        {
+          "id": "thursday",
+          "label": "Thursday",
+          "description": "Paid on Thursday following the pay period"
+        }
+      ]
+    },
+    {
+      "id": "q1_semimonthly_pattern",
+      "text": "For SEMI-MONTHLY payroll, what are the pay periods?",
+      "type": "choice",
+      "showIf": {
+        "questionId": "q1_frequencies",
+        "answerId": "semimonthly"
+      },
+      "options": [
+        {
+          "id": "1-15_16-end",
+          "label": "1st-15th and 16th-End of month",
+          "description": "Standard semi-monthly split"
+        }
+      ]
+    },
+    {
+      "id": "q1_semimonthly_payday",
+      "text": "For SEMI-MONTHLY payroll, what pay days do you use?",
+      "type": "multiple_select",
+      "showIf": {
+        "questionId": "q1_frequencies",
+        "answerId": "semimonthly"
+      },
+      "options": [
+        {
+          "id": "15-last",
+          "label": "15th and Last day of month",
+          "description": "Paid on the 15th and last business day"
+        },
+        {
+          "id": "15-30",
+          "label": "15th and 30th",
+          "description": "Paid on fixed dates"
+        }
+      ]
+    },
+    {
+      "id": "q1_monthly_payday",
+      "text": "For MONTHLY payroll, what pay days do you use?",
+      "type": "multiple_select",
+      "showIf": {
+        "questionId": "q1_frequencies",
+        "answerId": "monthly"
+      },
+      "options": [
+        {
+          "id": "last",
+          "label": "Last day of month",
+          "description": "Paid on last business day of each month"
+        },
+        {
+          "id": "15",
+          "label": "15th of month",
+          "description": "Paid on the 15th of each month"
+        },
+        {
+          "id": "1",
+          "label": "1st of following month",
+          "description": "Paid on the 1st of the following month"
+        }
+      ]
+    }
+  ]
+}
