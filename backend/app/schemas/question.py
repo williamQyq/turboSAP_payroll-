@@ -27,7 +27,6 @@ class QuestionType(str, Enum):
     FREE_TEXT = "free_text"  # Legacy: treated as text
     NUMBER = "number"
     YES_NO = "yes_no"
-    SPREADSHEET = "spreadsheet"  # Tabular data entry
 
 
 class QuestionOption(BaseModel):
@@ -179,64 +178,6 @@ class OutputMapping(BaseModel):
         extra = "allow"
 
 
-class SpreadsheetColumnType(str, Enum):
-    """Column data types for spreadsheet questions."""
-
-    TEXT = "text"
-    NUMBER = "number"
-
-
-class SpreadsheetColumn(BaseModel):
-    """
-    Configuration for a single column in a spreadsheet question.
-    """
-
-    key: str = Field(..., description="Column identifier used in row data")
-    label: str = Field(..., description="Display header for the column")
-    width: Optional[int] = Field(None, description="Column width in pixels")
-    required: bool = Field(default=False, description="Whether this column is required")
-    type: SpreadsheetColumnType = Field(
-        default=SpreadsheetColumnType.TEXT,
-        description="Data type for the column"
-    )
-    placeholder: Optional[str] = Field(None, description="Placeholder text for empty cells")
-
-    class Config:
-        extra = "allow"
-
-
-class SpreadsheetConfig(BaseModel):
-    """
-    Configuration for spreadsheet-type questions.
-    """
-
-    columns: List[SpreadsheetColumn] = Field(
-        ...,
-        min_length=1,
-        description="Column definitions for the spreadsheet"
-    )
-    minRows: int = Field(default=1, ge=0, description="Minimum number of rows required")
-    maxRows: Optional[int] = Field(None, ge=1, description="Maximum number of rows allowed")
-
-    @model_validator(mode="after")
-    def validate_max_rows(self) -> "SpreadsheetConfig":
-        """Ensure maxRows >= minRows if both are set."""
-        if self.maxRows is not None and self.maxRows < self.minRows:
-            raise ValueError(f"maxRows ({self.maxRows}) must be >= minRows ({self.minRows})")
-        return self
-
-    @model_validator(mode="after")
-    def validate_unique_keys(self) -> "SpreadsheetConfig":
-        """Ensure all column keys are unique."""
-        keys = [col.key for col in self.columns]
-        if len(keys) != len(set(keys)):
-            raise ValueError("Column keys must be unique")
-        return self
-
-    class Config:
-        extra = "allow"
-
-
 class Question(BaseModel):
     """
     A single question in a configuration module.
@@ -275,12 +216,6 @@ class Question(BaseModel):
         description="Output mapping configuration (Phase 2 - not used yet)"
     )
 
-    # Spreadsheet-specific configuration
-    spreadsheetConfig: Optional[SpreadsheetConfig] = Field(
-        None,
-        description="Configuration for spreadsheet-type questions (columns, rows)"
-    )
-
     @field_validator("type")
     @classmethod
     def validate_type(cls, v: str) -> str:
@@ -292,7 +227,6 @@ class Question(BaseModel):
             "text",
             "number",
             "yes_no",
-            "spreadsheet",
             # Legacy types
             "multiple_choice",
             "multiple_select",
@@ -302,13 +236,6 @@ class Question(BaseModel):
         if v not in valid_types:
             raise ValueError(f"Invalid question type: {v}. Valid types: {valid_types}")
         return v
-
-    @model_validator(mode="after")
-    def validate_spreadsheet_config(self) -> "Question":
-        """Ensure spreadsheet questions have spreadsheetConfig."""
-        if self.type == "spreadsheet" and not self.spreadsheetConfig:
-            raise ValueError("Spreadsheet questions must have 'spreadsheetConfig' defined")
-        return self
 
     def get_normalized_type(self) -> str:
         """Get the normalized question type (maps legacy to new types)."""

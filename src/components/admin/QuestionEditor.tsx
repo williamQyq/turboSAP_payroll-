@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { X, Plus, Trash2, Loader2, HelpCircle } from 'lucide-react';
-import type { Question, QuestionOption, OutputMapping, SpreadsheetColumn } from '../../api/modules';
+import type { Question, QuestionOption, OutputMapping } from '../../api/modules';
 
 interface QuestionEditorProps {
   question: Question | null; // null = creating new
@@ -22,7 +22,6 @@ const QUESTION_TYPES = [
   { value: 'single_select', label: 'Single Select (Radio)' },
   { value: 'multi_select', label: 'Multi Select (Checkboxes)' },
   { value: 'yes_no', label: 'Yes / No' },
-  { value: 'spreadsheet', label: 'Spreadsheet (Table)' },
 ];
 
 const TRANSFORM_TYPES = [
@@ -47,17 +46,6 @@ export function QuestionEditor({
   const [helpText, setHelpText] = useState(question?.helpText || '');
   const [options, setOptions] = useState<QuestionOption[]>(
     question?.options || []
-  );
-
-  // Spreadsheet config state
-  const [spreadsheetColumns, setSpreadsheetColumns] = useState<SpreadsheetColumn[]>(
-    question?.spreadsheetConfig?.columns || [{ key: 'col1', label: 'Column 1', type: 'text' }]
-  );
-  const [spreadsheetMinRows, setSpreadsheetMinRows] = useState(
-    question?.spreadsheetConfig?.minRows || 1
-  );
-  const [spreadsheetMaxRows, setSpreadsheetMaxRows] = useState<number | undefined>(
-    question?.spreadsheetConfig?.maxRows
   );
 
   // ShowIf state
@@ -90,9 +78,8 @@ export function QuestionEditor({
     Object.entries(question?.outputMapping?.valueMap || {})
   );
 
-  // Determine if type needs options or spreadsheet config
+  // Determine if type needs options
   const needsOptions = ['single_select', 'multi_select'].includes(type);
-  const needsSpreadsheetConfig = type === 'spreadsheet';
 
   // Get other questions for showIf dropdown (exclude current)
   const otherQuestions = existingQuestions.filter(
@@ -123,36 +110,6 @@ export function QuestionEditor({
       newOptions[index].value = value.toLowerCase().replace(/\s+/g, '_');
     }
     setOptions(newOptions);
-  }
-
-  function handleAddSpreadsheetColumn() {
-    setSpreadsheetColumns([
-      ...spreadsheetColumns,
-      { key: `col${spreadsheetColumns.length + 1}`, label: '', type: 'text' },
-    ]);
-  }
-
-  function handleRemoveSpreadsheetColumn(index: number) {
-    if (spreadsheetColumns.length > 1) {
-      setSpreadsheetColumns(spreadsheetColumns.filter((_, i) => i !== index));
-    }
-  }
-
-  function handleSpreadsheetColumnChange(
-    index: number,
-    field: keyof SpreadsheetColumn,
-    value: string | boolean
-  ) {
-    const newColumns = [...spreadsheetColumns];
-    newColumns[index] = { ...newColumns[index], [field]: value };
-    // Auto-generate key from label if label changes
-    if (field === 'label' && typeof value === 'string') {
-      const autoKey = value.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-      if (autoKey && !spreadsheetColumns.some((c, i) => i !== index && c.key === autoKey)) {
-        newColumns[index].key = autoKey;
-      }
-    }
-    setSpreadsheetColumns(newColumns);
   }
 
   function handleAddValueMapEntry() {
@@ -188,18 +145,6 @@ export function QuestionEditor({
 
     if (needsOptions && options.length > 0) {
       questionData.options = options.filter((o) => o.value && o.label);
-    }
-
-    // Spreadsheet Config
-    if (needsSpreadsheetConfig && spreadsheetColumns.length > 0) {
-      const validColumns = spreadsheetColumns.filter((col) => col.key && col.label);
-      if (validColumns.length > 0) {
-        questionData.spreadsheetConfig = {
-          columns: validColumns,
-          minRows: spreadsheetMinRows,
-          ...(spreadsheetMaxRows && { maxRows: spreadsheetMaxRows }),
-        };
-      }
     }
 
     // ShowIf
@@ -338,93 +283,6 @@ export function QuestionEditor({
                 <Plus className="h-4 w-4" />
                 Add Option
               </button>
-            </div>
-          )}
-
-          {/* Spreadsheet Columns Configuration */}
-          {needsSpreadsheetConfig && (
-            <div className="rounded-lg border border-gray-200 p-4">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Spreadsheet Columns
-              </label>
-              <div className="space-y-2">
-                {spreadsheetColumns.map((col, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={col.label}
-                      onChange={(e) =>
-                        handleSpreadsheetColumnChange(index, 'label', e.target.value)
-                      }
-                      placeholder="Column Label"
-                      className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
-                    />
-                    <select
-                      value={col.type || 'text'}
-                      onChange={(e) =>
-                        handleSpreadsheetColumnChange(index, 'type', e.target.value)
-                      }
-                      className="w-28 rounded-md border border-gray-300 px-2 py-2 text-sm"
-                    >
-                      <option value="text">Text</option>
-                      <option value="number">Number</option>
-                    </select>
-                    <label className="flex items-center gap-1 text-sm whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={col.required || false}
-                        onChange={(e) =>
-                          handleSpreadsheetColumnChange(index, 'required', e.target.checked)
-                        }
-                        className="rounded border-gray-300"
-                      />
-                      Required
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSpreadsheetColumn(index)}
-                      disabled={spreadsheetColumns.length <= 1}
-                      className="p-2 text-gray-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={handleAddSpreadsheetColumn}
-                className="mt-2 inline-flex items-center gap-1 text-sm text-amber-600 hover:text-amber-700"
-              >
-                <Plus className="h-4 w-4" />
-                Add Column
-              </button>
-
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Min Rows</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={spreadsheetMinRows}
-                    onChange={(e) => setSpreadsheetMinRows(Number(e.target.value) || 0)}
-                    className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Max Rows (optional)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={spreadsheetMaxRows || ''}
-                    onChange={(e) =>
-                      setSpreadsheetMaxRows(e.target.value ? Number(e.target.value) : undefined)
-                    }
-                    placeholder="No limit"
-                    className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
-                  />
-                </div>
-              </div>
             </div>
           )}
 

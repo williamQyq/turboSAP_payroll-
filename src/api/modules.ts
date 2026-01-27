@@ -59,33 +59,15 @@ export interface OutputMapping {
   valueMap?: Record<string, string>;
 }
 
-export interface SpreadsheetColumn {
-  key: string;
-  label: string;
-  width?: number;
-  required?: boolean;
-  type?: 'text' | 'number';
-  placeholder?: string;
-}
-
-export interface SpreadsheetConfig {
-  columns: SpreadsheetColumn[];
-  minRows?: number;
-  maxRows?: number;
-}
-
-export type SpreadsheetRow = Record<string, string | number | null>;
-
 export interface Question {
   id: string;
   text: string;
-  type: 'single_select' | 'multi_select' | 'text' | 'number' | 'yes_no' | 'spreadsheet' | string;
+  type: 'single_select' | 'multi_select' | 'text' | 'number' | 'yes_no' | string;
   options?: QuestionOption[];
   showIf?: ShowIfCondition;
   order?: number;
   helpText?: string;
   outputMapping?: OutputMapping;
-  spreadsheetConfig?: SpreadsheetConfig;
 }
 
 export interface ModuleDetail {
@@ -294,65 +276,6 @@ export async function deleteSession(
   sessionId: string
 ): Promise<{ success: boolean; message: string }> {
   return apiFetch(`/api/modules/${moduleSlug}/sessions/${sessionId}`, {
-    method: 'DELETE',
-  });
-}
-
-// =============================================================================
-// Output Export (for Export Center)
-// =============================================================================
-
-export interface SessionOutputMetadata {
-  sessionId: string;
-  moduleSlug: string;
-  completedAt: string;
-  startedAt: string | null;
-  answersCount: number;
-  files: string[];
-  userId?: number | null;
-}
-
-export interface ModuleOutputs {
-  moduleName: string;
-  sessions: SessionOutputMetadata[];
-}
-
-export async function listAllOutputs(): Promise<{
-  success: boolean;
-  outputs: Record<string, ModuleOutputs>;
-}> {
-  return apiFetch('/api/modules/outputs/all');
-}
-
-export async function listModuleOutputs(
-  moduleSlug: string
-): Promise<{
-  success: boolean;
-  moduleSlug: string;
-  sessions: SessionOutputMetadata[];
-  count: number;
-}> {
-  return apiFetch(`/api/modules/${moduleSlug}/outputs`);
-}
-
-export async function getPersistedOutput(
-  moduleSlug: string,
-  sessionId: string
-): Promise<{
-  success: boolean;
-  moduleSlug: string;
-  sessionId: string;
-  metadata: SessionOutputMetadata;
-  files: Record<string, string>;
-}> {
-  return apiFetch(`/api/modules/${moduleSlug}/outputs/${sessionId}`);
-}
-
-export async function deletePersistedOutput(
-  moduleSlug: string,
-  sessionId: string
-): Promise<{ success: boolean; message: string }> {
-  return apiFetch(`/api/modules/${moduleSlug}/outputs/${sessionId}`, {
     method: 'DELETE',
   });
 }

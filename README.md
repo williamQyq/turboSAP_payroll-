@@ -1,36 +1,30 @@
-```mermaid
+## Helpful Context
 
-flowchart TB
-    subgraph Frontend["Frontend"]
-        direction LR
-        ClientPages[Client Pages]
-        AdminPages[Admin Pages]
-    end
+See FILE_DESCRIPTIONS.md. This will give you a comprehensive sense of the architecture + where everything is. (As of 12/2025, this does not reflect the 2026 version!)
 
-    subgraph FE_Internal[" "]
-        direction LR
-        APIClients["API Clients<br/>src/api/*.ts"]
-        Stores["Zustand Stores<br/>auth.ts · store.ts"]
-    end
+These 4 files are old and are NOT used in the current architecture:
+- .DS_Store 
+- TurboSAP_questions.json
+- payroll_langgraph.py
+- payroll_decision_tree.py
 
-    subgraph Backend["Backend"]
-        Routes["API Routes<br/>/api/auth · /api/modules · /api/config · /api/hierarchy"]
-        Services["Service Layer<br/>ModuleService · QuestionService · GenericModuleRunner"]
-        ConfigStore["ConfigStore<br/>(LocalFileStore)"]
-    end
 
-    subgraph Data["Data Layer"]
-        direction LR
-        DB[(SQLite)]
-        JSON["JSON Configs<br/>data/modules/{slug}/"]
-        Memory["In-Memory<br/>Sessions"]
-    end
+## To Run
 
-    External["ReachNett S3 API"]
+```bash
+# Backend (1 terminal)
+cd payroll-area-config
+cd backend
+python3 main.py
 
-    Frontend --> FE_Internal
-    FE_Internal -->|HTTP/JSON| Backend
-    Routes --> Services --> ConfigStore --> Data
-    Services --> External
-
+# Frontend (separate terminal)
+cd payroll-area-config
+npm run dev
 ```
+
+## Deployment Link
+
+http://turbosap-py312-env.eba-5hg7r3id.us-east-2.elasticbeanstalk.com/login
+
+
+

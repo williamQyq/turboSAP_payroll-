@@ -78,7 +78,6 @@ function SortableQuestion({
       multiple_choice: 'Single Select',
       choice: 'Single Select',
       free_text: 'Text',
-      spreadsheet: 'Spreadsheet',
     };
     return labels[type] || type;
   }
@@ -90,7 +89,6 @@ function SortableQuestion({
       single_select: 'bg-green-50 text-green-700',
       multi_select: 'bg-teal-50 text-teal-700',
       yes_no: 'bg-orange-50 text-orange-700',
-      spreadsheet: 'bg-indigo-50 text-indigo-700',
     };
     return colors[type] || 'bg-gray-50 text-gray-700';
   }
@@ -153,12 +151,6 @@ function SortableQuestion({
                 {question.options && question.options.length > 0 && (
                   <span className="text-xs text-gray-400">
                     {question.options.length} options
-                  </span>
-                )}
-
-                {question.spreadsheetConfig && (
-                  <span className="text-xs text-gray-400">
-                    {question.spreadsheetConfig.columns.length} columns
                   </span>
                 )}
               </div>

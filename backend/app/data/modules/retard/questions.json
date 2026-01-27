@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "questions": [
+    {
+      "text": "How much do I enjoy the company of my girlfriend?",
+      "type": "multi_select",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 Unit"
+        },
+        {
+          "value": "2",
+          "label": "2 Units"
+        },
+        {
+          "value": "3",
+          "label": "17,781 Units"
+        },
+        {
+          "value": "4",
+          "label": "-3 Units"
+        }
+      ],
+      "id": "q_e557d640",
+      "order": 1
+    },
+    {
+      "text": "WHY",
+      "type": "multi_select",
+      "options": [
+        {
+          "value": "f",
+          "label": "Because I'm a bad person"
+        },
+        {
+          "value": "b",
+          "label": "Because she is turning me into a software engineer and not succeeding"
+        },
+        {
+          "value": "b",
+          "label": "Because she is attempting (and not succeeding) to throw me unto the corporate ladder"
+        },
+        {
+          "value": "b",
+          "label": "Because she is BAD"
+        }
+      ],
+      "showIf": {
+        "questionId": "q_e557d640",
+        "equals": "4"
+      },
+      "id": "q_c94504fe",
+      "order": 2
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-01-27T03:35:49.554740",
+    "createdBy": "admin123",
+    "lastModified": "2026-01-27T03:39:32.635884"
+  }
+}
