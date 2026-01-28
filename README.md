@@ -1,7 +1,7 @@
 ```mermaid
 
 flowchart TB
-    subgraph Frontend["Frontend (React · Port 5173)"]
+    subgraph Frontend["Frontend"]
         direction LR
         ClientPages[Client Pages]
         AdminPages[Admin Pages]
@@ -13,7 +13,7 @@ flowchart TB
         Stores["Zustand Stores<br/>auth.ts · store.ts"]
     end
 
-    subgraph Backend["Backend (FastAPI · Port 8000)"]
+    subgraph Backend["Backend"]
         Routes["API Routes<br/>/api/auth · /api/modules · /api/config · /api/hierarchy"]
         Services["Service Layer<br/>ModuleService · QuestionService · GenericModuleRunner"]
         ConfigStore["ConfigStore<br/>(LocalFileStore)"]
