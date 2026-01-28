@@ -60,6 +60,15 @@ import os
 
 
 from .routes import data_terminal, ai_config, module_config, knowledgebase, hierarchy, modules
+from .routes import (
+    data_terminal,
+    ai_config,
+    module_config,
+    knowledgebase,
+    hierarchy,
+    modules,
+    enhanced_knowledge,
+)
 
 ENV = os.getenv("APP_ENV", "development")
 
@@ -141,6 +150,7 @@ app.include_router(module_config.router)
 app.include_router(knowledgebase.router)
 app.include_router(hierarchy.router)
 app.include_router(modules.router)
+app.include_router(enhanced_knowledge.router)
 
 # Serve uploaded logos (in both dev and production)
 uploads_dir = Path(__file__).parent.parent / "uploads"
@@ -165,7 +175,7 @@ app.add_middleware(
         "http://127.0.0.1:3000",
         "http://turbosap-py312-env.eba-5hg7r3id.us-east-2.elasticbeanstalk.com",
         "TurboSAP-pre-stage-py312.eba-5hg7r3id.us-east-2.elasticbeanstalk.com",
-        "*"
+        "*",
     ],
     allow_credentials=True,
     allow_methods=["*"],

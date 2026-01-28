@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "version": "1",
+  "skills": {
+    "directories": [
+      "app/agents/.opencode/skill"
+    ],
+    "allow": [
+      "context_storage"
+    ]
+  },
+  "permission": {
+    "*": "deny",
+    "read": {
+      "data/**": "allow"
+    },
+    "write": {
+      "data/**": "allow"
+    }
+  }
+}
