@@ -59,7 +59,7 @@ from fastapi.responses import HTMLResponse
 import os
 
 
-from .routes import data_terminal, ai_config, module_config, knowledgebase, hierarchy, modules
+from .routes import data_terminal, ai_config, module_config, knowledgebase, hierarchy, modules, enhanced_knowledge
 
 ENV = os.getenv("APP_ENV", "development")
 
@@ -140,6 +140,7 @@ app.include_router(ai_config.router)
 app.include_router(module_config.router)
 app.include_router(knowledgebase.router)
 app.include_router(hierarchy.router)
+app.include_router(enhanced_knowledge.router)
 app.include_router(modules.router)
 
 # Serve uploaded logos (in both dev and production)

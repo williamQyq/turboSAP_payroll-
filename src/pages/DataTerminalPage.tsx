@@ -2,41 +2,18 @@ import { useMemo } from 'react';
 
 import { AdminLayout } from '../components/layout/AdminLayout';
 
-const isProductionEnv =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_ENV === 'production') ||
-  (typeof process !== 'undefined' && process.env?.APP_ENV === 'production');
-console.log(`isProductionEnv= ${isProductionEnv}`)
-const DEFAULT_AGENT_CONSOLE_URL = 'http://localhost:4096/agent-ui/';
-
-const resolvedProductionAgentUrl = (() => {
-  const apiBaseUrl =
-    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
-    (typeof process !== 'undefined' && process.env?.VITE_API_URL);
-
-  if (!apiBaseUrl) {
-    console.log("No api base url.")
-    return null;
-  }
-
-  try {
-    return new URL('/agent-ui/', apiBaseUrl).toString();
-  } catch (error) {
-    console.warn('Unable to construct agent console URL from VITE_API_URL', error);
-    return null;
-  }
-})();
-
-const AGENT_CONSOLE_URL =
-  (isProductionEnv && resolvedProductionAgentUrl) || DEFAULT_AGENT_CONSOLE_URL;
+const AGENT_CONSOLE_URL = import.meta.env.VITE_AGENT_CONSOLE_URL || 'http://localhost:4096';
 
 function buildAgentUrl(): string {
   try {
     const url = new URL(AGENT_CONSOLE_URL, window.location.origin);
+    url.searchParams.set('_ts', Date.now().toString());
     return url.toString();
   } catch (error) {
     console.warn('Unable to parse agent console URL', error);
     return AGENT_CONSOLE_URL;
   }
+}
 
 export function DataTerminalPage() {
   const iframeSrc = useMemo(buildAgentUrl, []);
