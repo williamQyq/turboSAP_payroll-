@@ -1,30 +1,37 @@
-## Helpful Context
+```mermaid
 
-See FILE_DESCRIPTIONS.md. This will give you a comprehensive sense of the architecture + where everything is. (As of 12/2025, this does not reflect the 2026 version!)
+flowchart LR
+    subgraph Frontend
+        UI[React + Vite]
+    end
 
-These 4 files are old and are NOT used in the current architecture:
-- .DS_Store 
-- TurboSAP_questions.json
-- payroll_langgraph.py
-- payroll_decision_tree.py
+    subgraph Backend
+        Auth[Auth Layer]
+        subgraph Routes
+            R1["/api/modules/{slug}/sessions"]
+            R2["/api/modules/{slug}/questions"]
+            R3["/api/admin/*"]
+            R4["/api/start <i>legacy</i>"]
+        end
+        subgraph Services
+            MS[ModuleService]
+            QS[QuestionService]
+            GMR[GenericModuleRunner]
+        end
+        CS[ConfigStore]
+    end
+
+    subgraph Data
+        DB[(SQLite)]
+        JSON["data/modules/{slug}/*.json"]
+    end
+
+    External[ReachNett S3]
+
+    UI --> Auth --> Routes --> Services --> CS --> Data
+    Routes -.-> LG[LangGraph legacy] -.-> Data
+    Services --> External
 
 
-## To Run
 
-```bash
-# Backend (1 terminal)
-cd payroll-area-config
-cd backend
-python3 main.py
-
-# Frontend (separate terminal)
-cd payroll-area-config
-npm run dev
 ```
-
-## Deployment Link
-
-http://turbosap-py312-env.eba-5hg7r3id.us-east-2.elasticbeanstalk.com/login
-
-
-
