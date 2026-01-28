@@ -1,37 +1,36 @@
 ```mermaid
 
-flowchart LR
-    subgraph Frontend
-        UI[React + Vite]
+flowchart TB
+    subgraph Frontend["Frontend (React · Port 5173)"]
+        direction LR
+        ClientPages[Client Pages]
+        AdminPages[Admin Pages]
     end
 
-    subgraph Backend
-        Auth[Auth Layer]
-        subgraph Routes
-            R1["/api/modules/{slug}/sessions"]
-            R2["/api/modules/{slug}/questions"]
-            R3["/api/admin/*"]
-            R4["/api/start <i>legacy</i>"]
-        end
-        subgraph Services
-            MS[ModuleService]
-            QS[QuestionService]
-            GMR[GenericModuleRunner]
-        end
-        CS[ConfigStore]
+    subgraph FE_Internal[" "]
+        direction LR
+        APIClients["API Clients<br/>src/api/*.ts"]
+        Stores["Zustand Stores<br/>auth.ts · store.ts"]
     end
 
-    subgraph Data
+    subgraph Backend["Backend (FastAPI · Port 8000)"]
+        Routes["API Routes<br/>/api/auth · /api/modules · /api/config · /api/hierarchy"]
+        Services["Service Layer<br/>ModuleService · QuestionService · GenericModuleRunner"]
+        ConfigStore["ConfigStore<br/>(LocalFileStore)"]
+    end
+
+    subgraph Data["Data Layer"]
+        direction LR
         DB[(SQLite)]
-        JSON["data/modules/{slug}/*.json"]
+        JSON["JSON Configs<br/>data/modules/{slug}/"]
+        Memory["In-Memory<br/>Sessions"]
     end
 
-    External[ReachNett S3]
+    External["ReachNett S3 API"]
 
-    UI --> Auth --> Routes --> Services --> CS --> Data
-    Routes -.-> LG[LangGraph legacy] -.-> Data
+    Frontend --> FE_Internal
+    FE_Internal -->|HTTP/JSON| Backend
+    Routes --> Services --> ConfigStore --> Data
     Services --> External
-
-
 
 ```
