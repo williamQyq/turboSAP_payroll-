@@ -24,7 +24,12 @@ import {
   type ModuleDetail,
   type SessionState,
   type Question,
+  type SpreadsheetRow,
 } from '../api/modules';
+import {
+  SpreadsheetInput,
+  isSpreadsheetValid,
+} from '../components/questions/SpreadsheetInput';
 
 export function ModuleSessionPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -261,6 +266,23 @@ export function ModuleSessionPage() {
           </div>
         );
 
+      case 'spreadsheet':
+        if (!question.spreadsheetConfig) {
+          return (
+            <div className="p-4 bg-red-50 text-red-700 rounded-lg flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Spreadsheet configuration missing
+            </div>
+          );
+        }
+        return (
+          <SpreadsheetInput
+            config={question.spreadsheetConfig}
+            value={(currentAnswer as SpreadsheetRow[]) || []}
+            onChange={(rows) => setCurrentAnswer(rows)}
+          />
+        );
+
       default:
         return (
           <input
@@ -424,7 +446,12 @@ export function ModuleSessionPage() {
                   submitting ||
                   currentAnswer === null ||
                   currentAnswer === '' ||
-                  (Array.isArray(currentAnswer) && currentAnswer.length === 0)
+                  (Array.isArray(currentAnswer) && currentAnswer.length === 0) ||
+                  (currentQuestion?.type === 'spreadsheet' &&
+                    !isSpreadsheetValid(
+                      currentAnswer as SpreadsheetRow[],
+                      currentQuestion.spreadsheetConfig
+                    ))
                 }
                 className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-6 py-3 font-medium text-white hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >

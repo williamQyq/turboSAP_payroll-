@@ -4,7 +4,7 @@
  * Directory tree + preview panel layout
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useExportData } from '../hooks/useExportData';
 import type { PayrollArea } from '../types';
@@ -35,6 +35,11 @@ import {
   generateCompanyCodeCSV,
 } from '../utils/fileGenerators';
 import { downloadCSV, downloadAsZip } from '../utils/exportUtils';
+import {
+  listAllOutputs,
+  getPersistedOutput,
+  type ModuleOutputs,
+} from '../api/modules';
 
 // ============================================
 // Types
@@ -44,11 +49,14 @@ interface FileNode {
   id: string;
   name: string;
   type: 'folder' | 'file';
-  module: 'payroll' | 'payment' | 'company-code';
+  module: 'payroll' | 'payment' | 'company-code' | 'config';
   children?: FileNode[];
   generator?: string; // Key into FILE_GENERATORS
   disabled?: boolean;
   rowCount?: number;
+  // For config module files
+  configModuleSlug?: string;
+  configSessionId?: string;
 }
 
 interface ParsedCSV {
@@ -430,17 +438,49 @@ function PreviewPanel({ fileId, content, onContentChange, onDownload, fileName, 
 }
 
 // ============================================
+// Helpers
+// ============================================
+
+function findFileNode(nodes: FileNode[], id: string): FileNode | null {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+    if (node.children) {
+      const found = findFileNode(node.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+// ============================================
 // Main Component
 // ============================================
 
 export function ExportCenterPage() {
   const { payrollAreas, payrollStatus, paymentData, paymentStatus, companyCodes, companyCodeStatus, publishToS3 } = useExportData();
 
-  const [expanded, setExpanded] = useState<Set<string>>(new Set(['payroll', 'payment', 'company-code']));
+  const [expanded, setExpanded] = useState<Set<string>>(new Set(['payroll', 'payment', 'company-code', 'config']));
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [editedContents, setEditedContents] = useState<Record<string, string>>({});
   const [isPublishing, setIsPublishing] = useState(false);
-  
+
+  // Config module outputs state
+  const [configOutputs, setConfigOutputs] = useState<Record<string, ModuleOutputs>>({});
+  const [configFileContents, setConfigFileContents] = useState<Record<string, string>>({});
+
+  // Fetch config module outputs on mount
+  useEffect(() => {
+    async function fetchConfigOutputs() {
+      try {
+        const response = await listAllOutputs();
+        setConfigOutputs(response.outputs);
+      } catch (err) {
+        console.error('Failed to load config module outputs:', err);
+      }
+    }
+    fetchConfigOutputs();
+  }, []);
+
   const handlePublish = async () => {
     // Determine the primary company for naming/pathing
     const primary = companyCodes.find(c => c.companyCode && c.companyName);
@@ -608,8 +648,73 @@ export function ExportCenterPage() {
           },
         ],
       },
+      // Config Modules - one folder per module, showing latest session's files
+      ...(Object.keys(configOutputs).length > 0
+        ? [
+            {
+              id: 'config',
+              name: 'Config Modules',
+              type: 'folder' as const,
+              module: 'config' as const,
+              children: Object.entries(configOutputs)
+                .filter(([, moduleData]) => moduleData.sessions.length > 0)
+                .map(([moduleSlug, moduleData]): FileNode => {
+                  // Use the latest session (sessions are sorted by completedAt descending)
+                  const latestSession = moduleData.sessions[0];
+
+                  return {
+                    id: `config-${moduleSlug}`,
+                    name: moduleData.moduleName,
+                    type: 'folder' as const,
+                    module: 'config' as const,
+                    children: latestSession.files.map((filename): FileNode => ({
+                      id: `config-${moduleSlug}-${latestSession.sessionId}-${filename}`,
+                      name: filename,
+                      type: 'file' as const,
+                      module: 'config' as const,
+                      configModuleSlug: moduleSlug,
+                      configSessionId: latestSession.sessionId,
+                    })),
+                  };
+                }),
+            },
+          ]
+        : []),
     ];
-  }, [payrollAreas, payrollStatus, paymentData, paymentStatus, companyCodes, companyCodeStatus]);
+  }, [payrollAreas, payrollStatus, paymentData, paymentStatus, companyCodes, companyCodeStatus, configOutputs]);
+
+  // Fetch config file content when a config file is selected
+  useEffect(() => {
+    async function fetchConfigFileContent() {
+      if (!selectedFile?.startsWith('config-')) return;
+
+      // Check if already loaded
+      if (configFileContents[selectedFile]) return;
+
+      // Find the file node to get moduleSlug and sessionId
+      const fileNode = findFileNode(fileTree, selectedFile);
+      if (!fileNode || !fileNode.configModuleSlug || !fileNode.configSessionId) {
+        console.error('Could not find file node for:', selectedFile);
+        return;
+      }
+
+      const { configModuleSlug, configSessionId } = fileNode;
+      const filename = fileNode.name;
+
+      try {
+        const output = await getPersistedOutput(configModuleSlug, configSessionId);
+        if (output.files[filename]) {
+          setConfigFileContents((prev) => ({
+            ...prev,
+            [selectedFile]: output.files[filename],
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to load config file content:', err);
+      }
+    }
+    fetchConfigFileContent();
+  }, [selectedFile, configFileContents, fileTree]);
 
   // Generate file content
   const generateContent = useCallback(
@@ -617,6 +722,11 @@ export function ExportCenterPage() {
       // Return edited content if available
       if (editedContents[fileId]) {
         return editedContents[fileId];
+      }
+
+      // Handle config module files - content is fetched async
+      if (fileId.startsWith('config-')) {
+        return configFileContents[fileId] || 'Loading...';
       }
 
       // Helper to return headers-only if no data
@@ -660,11 +770,18 @@ export function ExportCenterPage() {
           return EMPTY_CSVS[fileId] || '';
       }
     },
-    [payrollAreas, paymentData, companyCodes, editedContents]
+    [payrollAreas, paymentData, companyCodes, editedContents, configFileContents]
   );
 
   // Get file name from ID
   const getFileName = (fileId: string): string => {
+    // Handle config module files: config-{moduleSlug}-{sessionId}-{filename}
+    if (fileId.startsWith('config-')) {
+      const parts = fileId.replace('config-', '').split('-');
+      // Last part is the filename
+      return parts[parts.length - 1];
+    }
+
     // Handle calendar-specific files
     if (fileId.startsWith('pay-period-')) {
       const calendarId = fileId.replace('pay-period-', '');
@@ -887,11 +1004,13 @@ export function ExportCenterPage() {
             fileName={selectedFile ? getFileName(selectedFile) : ''}
             hasData={
               selectedFile
-                ? selectedFile.startsWith('pay-period-') || selectedFile.startsWith('pay-date-') || ['payroll-areas', 'calendar-id', 'payroll-area-config'].includes(selectedFile)
-                  ? payrollAreas.length > 0
-                  : selectedFile === 'company-code-file'
-                    ? companyCodes.filter((c) => c.companyCode && c.companyName).length > 0
-                    : !!paymentData?.methods.length
+                ? selectedFile.startsWith('config-')
+                  ? !!configFileContents[selectedFile]
+                  : selectedFile.startsWith('pay-period-') || selectedFile.startsWith('pay-date-') || ['payroll-areas', 'calendar-id', 'payroll-area-config'].includes(selectedFile)
+                    ? payrollAreas.length > 0
+                    : selectedFile === 'company-code-file'
+                      ? companyCodes.filter((c) => c.companyCode && c.companyName).length > 0
+                      : !!paymentData?.methods.length
                 : false
             }
           />

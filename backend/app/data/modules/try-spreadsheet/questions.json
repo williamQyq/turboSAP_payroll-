@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "questions": [
+    {
+      "text": "Company Code",
+      "type": "spreadsheet",
+      "spreadsheetConfig": {
+        "columns": [
+          {
+            "key": "col1",
+            "label": "Column 1",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "column_2",
+            "label": "Column 2",
+            "type": "number",
+            "required": true
+          },
+          {
+            "key": "column_3",
+            "label": "Column 3",
+            "type": "text"
+          },
+          {
+            "key": "column_4",
+            "label": "Column 4",
+            "type": "text",
+            "required": true
+          }
+        ],
+        "minRows": 1
+      },
+      "outputMapping": {
+        "file": "table.csv",
+        "column": "Column",
+        "transform": "direct"
+      },
+      "id": "q_aceda415",
+      "order": 1
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-01-29T19:59:29.547648",
+    "createdBy": "admin123",
+    "lastModified": "2026-01-29T20:00:27.681780"
+  }
+}

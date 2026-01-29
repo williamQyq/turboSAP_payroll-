@@ -239,6 +239,45 @@ def _validate_questions_schema(data: Dict[str, Any], module_slug: str) -> None:
                             detail=f"Question '{qid}', option {j+1} is missing 'label'"
                         )
 
+        # Validate spreadsheetConfig for spreadsheet-type questions
+        if qtype == "spreadsheet":
+            spreadsheet_config = q.get("spreadsheetConfig")
+            if not spreadsheet_config or not isinstance(spreadsheet_config, dict):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Question '{qid}' (spreadsheet type) requires 'spreadsheetConfig'"
+                )
+            columns = spreadsheet_config.get("columns")
+            if not columns or not isinstance(columns, list) or len(columns) == 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Question '{qid}' spreadsheetConfig must have at least one column"
+                )
+            seen_keys = set()
+            for j, col in enumerate(columns):
+                if not isinstance(col, dict):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Question '{qid}', column {j+1} must be an object"
+                    )
+                col_key = col.get("key")
+                if not col_key:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Question '{qid}', column {j+1} missing 'key'"
+                    )
+                if col_key in seen_keys:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Question '{qid}' has duplicate column key '{col_key}'"
+                    )
+                seen_keys.add(col_key)
+                if not col.get("label"):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Question '{qid}', column {j+1} missing 'label'"
+                    )
+
 
 def _get_module_files(slug: str) -> dict:
     """Get module file paths or raise 404."""

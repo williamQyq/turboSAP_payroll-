@@ -1,0 +1,11 @@
+{
+  "completedAt": "2026-01-28T22:33:53.242292Z",
+  "startedAt": "2026-01-28T22:33:51.247498Z",
+  "answersCount": 1,
+  "userId": 4,
+  "sessionId": "2f80c8cb-34b3-40ca-9ba2-e7742789b58c",
+  "moduleSlug": "sample-demo-new-module",
+  "files": [
+    "favorite_number.csv"
+  ]
+}

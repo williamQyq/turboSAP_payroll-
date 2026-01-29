@@ -1,0 +1,11 @@
+{
+  "completedAt": "2026-01-29T20:04:17.598747Z",
+  "startedAt": "2026-01-29T20:00:49.462831Z",
+  "answersCount": 1,
+  "userId": 4,
+  "sessionId": "abf2be44-c13f-44fa-b008-b5a630f59ba2",
+  "moduleSlug": "try-spreadsheet",
+  "files": [
+    "table.csv"
+  ]
+}

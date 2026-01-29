@@ -136,7 +136,7 @@ def validate_questions(
             valid_types = {
                 "single_select", "multi_select", "multiple_select",
                 "multiple_choice", "choice", "text", "free_text",
-                "number", "yes_no"
+                "number", "yes_no", "spreadsheet"
             }
             if qtype not in valid_types:
                 result.add_warning(f"{q_prefix}: Unknown question type '{qtype}'")
@@ -151,6 +151,33 @@ def validate_questions(
                 else:
                     option_result = _validate_options(options, qid, module_slug)
                     result.merge(option_result)
+
+        # Validate spreadsheetConfig for spreadsheet-type questions
+        if qtype == "spreadsheet":
+            spreadsheet_config = q.get("spreadsheetConfig")
+            if not spreadsheet_config:
+                result.add_error(f"{q_prefix}: spreadsheet type requires 'spreadsheetConfig'")
+            elif not isinstance(spreadsheet_config, dict):
+                result.add_error(f"{q_prefix}: 'spreadsheetConfig' must be an object")
+            else:
+                columns = spreadsheet_config.get("columns")
+                if not columns or not isinstance(columns, list) or len(columns) == 0:
+                    result.add_error(f"{q_prefix}: spreadsheetConfig must have at least one column")
+                else:
+                    seen_keys: Set[str] = set()
+                    for col_idx, col in enumerate(columns):
+                        if not isinstance(col, dict):
+                            result.add_error(f"{q_prefix}: column {col_idx + 1} must be an object")
+                            continue
+                        col_key = col.get("key")
+                        if not col_key:
+                            result.add_error(f"{q_prefix}: column {col_idx + 1} missing 'key'")
+                        elif col_key in seen_keys:
+                            result.add_error(f"{q_prefix}: duplicate column key '{col_key}'")
+                        else:
+                            seen_keys.add(col_key)
+                        if not col.get("label"):
+                            result.add_error(f"{q_prefix}: column {col_idx + 1} missing 'label'")
 
         # Validate showIf references
         show_if = q.get("showIf")

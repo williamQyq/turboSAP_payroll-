@@ -1,0 +1,14 @@
+{
+  "slug": "try-spreadsheet",
+  "name": "Try Spreadsheet",
+  "description": "",
+  "category": null,
+  "icon": "box",
+  "status": "active",
+  "order": 999,
+  "version": "1.0",
+  "createdAt": "2026-01-29T19:59:29.547648",
+  "createdBy": "admin123",
+  "updatedAt": "2026-01-29T20:00:35.261712",
+  "updatedBy": "admin123"
+}

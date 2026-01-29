@@ -1,0 +1,11 @@
+{
+  "completedAt": "2026-01-28T21:21:19.372089Z",
+  "startedAt": "2026-01-28T21:21:13.261785Z",
+  "answersCount": 1,
+  "userId": 4,
+  "sessionId": "07c110ef-4dd8-4212-af5a-af6b6f0b604e",
+  "moduleSlug": "new-module",
+  "files": [
+    "letters.csv"
+  ]
+}

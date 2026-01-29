@@ -26,6 +26,7 @@ from ..schemas.session import (
 from .module_service import ModuleService, module_service
 from .output_generator import OutputGenerator, output_generator
 from .question_service import QuestionService, question_service
+from .session_output_store import SessionOutputStore, session_output_store
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,7 @@ class GenericModuleRunner:
         module_svc: Optional[ModuleService] = None,
         question_svc: Optional[QuestionService] = None,
         output_gen: Optional[OutputGenerator] = None,
+        output_store: Optional[SessionOutputStore] = None,
     ):
         """
         Initialize the module runner for a specific module.
@@ -72,11 +74,13 @@ class GenericModuleRunner:
             module_svc: ModuleService instance
             question_svc: QuestionService instance
             output_gen: OutputGenerator instance
+            output_store: SessionOutputStore instance for persisting outputs
         """
         self.module_slug = module_slug
         self.module_service = module_svc or module_service
         self.question_service = question_svc or question_service
         self.output_generator = output_gen or output_generator
+        self.output_store = output_store or session_output_store
 
         # Verify module exists
         if not self.module_service.module_exists(module_slug):
@@ -248,6 +252,9 @@ class GenericModuleRunner:
                 session.completed_at = datetime.utcnow()
                 session.current_question_id = None
 
+                # Save outputs to persistent storage
+                self._persist_session_outputs(session)
+
             self._save_session(session)
 
             return AnswerResult(
@@ -256,6 +263,51 @@ class GenericModuleRunner:
                 isComplete=is_complete,
                 message="Module completed" if is_complete else None,
                 sessionState=session,
+            )
+
+    def _persist_session_outputs(self, session: SessionState) -> None:
+        """
+        Persist session outputs to the output store.
+
+        Called when a session is completed.
+        """
+        try:
+            # Generate outputs
+            output_files = self.output_generator.generate_output(
+                self.module_slug,
+                session.answers,
+            )
+
+            # Convert to storable format (CSV strings)
+            outputs = {}
+            for filename, output_file in output_files.items():
+                outputs[filename] = output_file.to_csv()
+
+            # Prepare metadata
+            metadata = {
+                "completedAt": session.completed_at.isoformat() + "Z" if session.completed_at else None,
+                "startedAt": session.started_at.isoformat() + "Z" if session.started_at else None,
+                "answersCount": len(session.answers),
+                "userId": session.user_id,
+            }
+
+            # Save to store
+            self.output_store.save_output(
+                module_slug=self.module_slug,
+                session_id=session.session_id,
+                outputs=outputs,
+                metadata=metadata,
+            )
+
+            logger.info(
+                f"Persisted outputs for session '{session.session_id}' "
+                f"({len(outputs)} files)"
+            )
+
+        except Exception as e:
+            # Log error but don't fail the completion
+            logger.error(
+                f"Failed to persist outputs for session '{session.session_id}': {e}"
             )
 
     def get_session_state(self, session_id: str) -> SessionState:
