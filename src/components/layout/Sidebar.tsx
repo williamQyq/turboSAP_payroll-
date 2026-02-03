@@ -22,12 +22,14 @@ import {
   Sparkles,
   Building2,
   Package,
+  ReceiptCent,
 } from 'lucide-react';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard', key: 'dashboard' },
   { icon: Sparkles, label: 'AI Config', href: '/ai-config', key: 'aiConfig', isNew: true },
   { icon: Building2, label: 'Company Codes', href: '/company-code', key: 'companyCodes' },
+  { icon: ReceiptCent, label: 'Tax Companies', href: '/tax-company', key: 'taxCompanies' },
   { icon: Calendar, label: 'Payroll Areas', href: '/payroll-area', key: 'payrollAreas' },
   { icon: CreditCard, label: 'Payment Methods', href: '/payment-methods', key: 'paymentMethods' },
   { icon: Package, label: 'Config Modules', href: '/modules', key: 'modules', isNew: true },
@@ -47,7 +49,7 @@ export function Sidebar({ currentPath }: SidebarProps) {
   const { user, clearAuth } = useAuthStore();
 
   // Get live status from localStorage via useExportData hook
-  const { payrollStatus, paymentStatus, companyCodeStatus } = useExportData();
+  const { payrollStatus, paymentStatus, companyCodeStatus, taxCompanyStatus } = useExportData();
 
   const handleSignOut = () => {
     clearAuth();
@@ -68,6 +70,8 @@ export function Sidebar({ currentPath }: SidebarProps) {
       status = paymentStatus.status;
     } else if (key === 'companyCodes') {
       status = companyCodeStatus.status;
+    } else if (key === 'taxCompanies') {
+      status = taxCompanyStatus.status;
     }
 
     if (status === 'complete') {

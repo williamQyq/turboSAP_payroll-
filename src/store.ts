@@ -35,6 +35,10 @@ interface ConfigurationStore {
   companyCodeVersion: number;
   notifyCompanyCodeChanged: () => void;
 
+  // Tax company data sync - incremented when tax company localStorage changes
+  taxCompanyVersion: number;
+  notifyTaxCompanyChanged: () => void;
+
   // Actions
   updateCompanyName: (name: string) => void;
   updateTotalEmployees: (count: number) => void;
@@ -127,20 +131,26 @@ export const useConfigStore = create<ConfigurationStore>()(
       notifyCompanyCodeChanged: () => set((state) => ({
         companyCodeVersion: state.companyCodeVersion + 1
       })),
+     
+      // Tax company data sync
+      taxCompanyVersion: 0,
+      notifyTaxCompanyChanged: () => set((state) => ({
+        taxCompanyVersion: (state as any).taxCompanyVersion + 1
+      })),
 
-  updateCompanyName: (name) =>
-    set((state) => {
-      const newProfile = { ...state.profile, companyName: name };
-      return { profile: newProfile };
-    }),
+      updateCompanyName: (name) =>
+      set((state) => {
+        const newProfile = { ...state.profile, companyName: name };
+        return { profile: newProfile };
+      }),
 
-  updateTotalEmployees: (count) =>
-    set((state) => {
-      const newProfile = { ...state.profile, totalEmployees: count };
-      const newAreas = calculateMinimalAreas(newProfile);
-      const newValidation = validateConfiguration(newProfile, newAreas);
-      return { profile: newProfile, payrollAreas: newAreas, validation: newValidation };
-    }),
+      updateTotalEmployees: (count) =>
+        set((state) => {
+          const newProfile = { ...state.profile, totalEmployees: count };
+          const newAreas = calculateMinimalAreas(newProfile);
+          const newValidation = validateConfiguration(newProfile, newAreas);
+          return { profile: newProfile, payrollAreas: newAreas, validation: newValidation };
+        }),
 
   addPayFrequency: (freq) =>
     set((state) => {
@@ -334,6 +344,7 @@ export const useConfigStore = create<ConfigurationStore>()(
         validation: state.validation,
         paymentDataVersion: state.paymentDataVersion,
         companyCodeVersion: state.companyCodeVersion,
+        taxCompanyVersion: (state as any).taxCompanyVersion ?? 0,
       }),
     }
   )

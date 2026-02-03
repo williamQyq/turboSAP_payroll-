@@ -6,7 +6,7 @@
 import { useMemo} from 'react';
 import { useConfigStore } from '../store';
 import { useAuthStore } from '../store/auth';
-import type { PayrollArea, CompanyCode } from '../types';
+import type { PayrollArea, CompanyCode, TaxCompany } from '../types';
 import type {
   PaymentMethodRow,
   CheckRangeRow,
@@ -54,6 +54,10 @@ export interface ExportDataResult {
   companyCodes: CompanyCode[];
   companyCodeStatus: ModuleStatus;
 
+  // Tax company data
+  taxCompanies: TaxCompany[];
+  taxCompanyStatus: ModuleStatus;
+
   // User info
   userKey: string;
 
@@ -72,9 +76,22 @@ function companyCodeDraftKey(userKey: string) {
   return `turbosap.company_code.draft.v1.${userKey}`;
 }
 
+function taxCompanyDraftKey(userKey: string) {
+  return `turbosap.tax_company.draft.v1.${userKey}`;
+}
+
 function loadCompanyCodeDraft(userKey: string): CompanyCode[] {
   try {
     const raw = localStorage.getItem(companyCodeDraftKey(userKey));
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function loadTaxCompanyDraft(userKey: string): TaxCompany[] {
+  try {
+    const raw = localStorage.getItem(taxCompanyDraftKey(userKey));
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -136,6 +153,7 @@ export function useExportData(): ExportDataResult {
 
   // Subscribe to company code version to trigger re-computation when localStorage changes
   const companyCodeVersion = useConfigStore((state) => state.companyCodeVersion);
+  const taxCompanyVersion = useConfigStore((state) => (state as any).taxCompanyVersion ?? 0);
 
   
   const paymentData = useMemo((): PaymentData | null => {
@@ -248,6 +266,10 @@ export function useExportData(): ExportDataResult {
     return loadCompanyCodeDraft(userKey);
   }, [userKey, companyCodeVersion]);
 
+  const taxCompanies = useMemo((): TaxCompany[] => {
+    return loadTaxCompanyDraft(userKey);
+  }, [userKey, taxCompanyVersion]);
+
   // Calculate company code status (simplified: complete or not-started)
   // A row is complete only if ALL required fields are filled
   const companyCodeStatus = useMemo((): ModuleStatus => {
@@ -272,6 +294,13 @@ export function useExportData(): ExportDataResult {
     };
   }, [companyCodes]);
 
+  const taxCompanyStatus = useMemo((): ModuleStatus => {
+    if (taxCompanies.length === 0) {
+      return { status: 'not-started', itemCount: 0 };
+    }
+    return { status: 'complete', itemCount: taxCompanies.length };
+  }, [taxCompanies]);
+
  /**
    * NEW: Explicit Publish Function
    * Gathers all state and pushes to the new S3-backed endpoint
@@ -284,6 +313,7 @@ export function useExportData(): ExportDataResult {
       check_ranges: paymentData?.checkRanges || [],
       pre_notification_required: paymentData?.preNotificationRequired || false,
       company_codes: companyCodes,
+      tax_companies: taxCompanies,
       published_at: new Date().toISOString(),
       published_by: userKey
     };
@@ -313,6 +343,8 @@ export function useExportData(): ExportDataResult {
     paymentStatus,
     companyCodes,
     companyCodeStatus,
+    taxCompanies,
+    taxCompanyStatus,
     userKey,
     publishToS3,
   };

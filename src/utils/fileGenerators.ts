@@ -4,7 +4,7 @@
  * Extracted from PayrollResultsCard and PaymentMethodPage
  */
 
-import type { PayrollArea, CompanyCode } from '../types';
+import type { PayrollArea, CompanyCode, TaxCompany } from '../types';
 import {
   toCSVWithLabels,
   formatDatePadded,
@@ -85,6 +85,12 @@ export interface CompanyCodeRow {
   vat_registration_number: string;
   credit_control_area: string;
   tax_jurisdiction_code: string;
+}
+
+export interface TaxCompanyRow {
+  tax_company_code: string;
+  tax_company_name: string;
+  address: string;
 }
 
 export interface ExportFile {
@@ -603,6 +609,24 @@ export function generateCompanyCodeCSV(codes: CompanyCode[]): string {
   return toCSVWithLabels(rows, columns);
 }
 
+export function generateTaxCompanyCSV(companies: TaxCompany[]): string {
+  const rows: TaxCompanyRow[] = companies
+    .filter((c) => c.code && c.name)
+    .map((c) => ({
+      tax_company_code: String(c.code ?? ''),
+      tax_company_name: c.name || '',
+      address: c.address || '',
+    }));
+
+  const columns = [
+    { key: 'tax_company_code' as const, label: 'Tax_Company_Code' },
+    { key: 'tax_company_name' as const, label: 'Tax_Company_Name' },
+    { key: 'address' as const, label: 'Address' },
+  ];
+
+  return toCSVWithLabels(rows, columns);
+}
+
 // ============================================
 // File Registry
 // ============================================
@@ -710,6 +734,16 @@ export const FILE_GENERATORS: Record<string, FileGeneratorConfig> = {
     generate: (data) => {
       const codes = data as CompanyCode[];
       return { content: generateCompanyCodeCSV(codes), rowCount: codes.length };
+    },
+  },
+  'tax-company': {
+    id: 'tax-company',
+    name: 'Tax Company',
+    description: 'Tax company master data',
+    module: 'payroll',
+    generate: (data) => {
+      const companies = data as TaxCompany[];
+      return { content: generateTaxCompanyCSV(companies), rowCount: companies.length };
     },
   },
 };

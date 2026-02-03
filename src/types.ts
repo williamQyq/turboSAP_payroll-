@@ -131,3 +131,16 @@ export interface CompanyCode {
   negativePostingsPermitted?: boolean;
   taxJurisdictionCode?: string;   // US state/local tax code
 }
+
+// ============================================
+// Tax Company Types
+// ============================================
+
+export interface TaxCompany {
+  // Auto-generated numeric code starting at 1000 and incrementing by 1000
+  code: number;
+  // Display name, limited to 40 characters in the UI
+  name: string;
+  // Free-form address string
+  address: string;
+}

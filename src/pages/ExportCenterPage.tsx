@@ -33,6 +33,7 @@ import {
   generateCheckRangeCSV,
   generatePreNotificationCSV,
   generateCompanyCodeCSV,
+  generateTaxCompanyCSV,
 } from '../utils/fileGenerators';
 import { downloadCSV, downloadAsZip } from '../utils/exportUtils';
 import {
@@ -78,6 +79,7 @@ const EMPTY_CSVS: Record<string, string> = {
   'check-range': 'Company_Code,Bank_Account,Check_Number_Range',
   'pre-notification': 'Pre_Notification_Required',
   'company-code': 'Company_Code,Company_Name,Short_Name,Currency,Language,Street,City,State,Zip_Code,Country,PO_Box,Chart_of_Accounts,Fiscal_Year_Variant,VAT_Registration_Number,Credit_Control_Area,Tax_Jurisdiction_Code',
+  'tax-company': 'Tax_Company_Code,Tax_Company_Name,Address',
 };
 
 // ============================================
@@ -457,7 +459,7 @@ function findFileNode(nodes: FileNode[], id: string): FileNode | null {
 // ============================================
 
 export function ExportCenterPage() {
-  const { payrollAreas, payrollStatus, paymentData, paymentStatus, companyCodes, companyCodeStatus, publishToS3 } = useExportData();
+  const { payrollAreas, payrollStatus, paymentData, paymentStatus, companyCodes, companyCodeStatus, taxCompanies, taxCompanyStatus, publishToS3 } = useExportData();
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['payroll', 'payment', 'company-code', 'config']));
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -508,6 +510,7 @@ export function ExportCenterPage() {
     const payrollDisabled = payrollStatus.status === 'not-started';
     const paymentDisabled = paymentStatus.status === 'not-started';
     const companyCodeDisabled = companyCodeStatus.status === 'not-started';
+    const taxCompanyDisabled = taxCompanyStatus.status === 'not-started';
     const validCompanyCodes = companyCodes.filter((c) => c.companyCode && c.companyName);
 
     // Get unique calendars and group areas by calendar
@@ -591,6 +594,24 @@ export function ExportCenterPage() {
             module: 'payroll',
             disabled: payrollDisabled,
             children: payDatesChildren,
+          },
+        ],
+      },
+      {
+        id: 'tax-company',
+        name: 'Tax Company Configuration',
+        type: 'folder',
+        module: 'payroll',
+        disabled: taxCompanyDisabled,
+        children: [
+          {
+            id: 'tax-company-file',
+            name: 'tax_company.csv',
+            type: 'file',
+            module: 'payroll',
+            generator: 'tax-company',
+            disabled: taxCompanyDisabled,
+            rowCount: taxCompanies.length,
           },
         ],
       },
@@ -681,7 +702,7 @@ export function ExportCenterPage() {
           ]
         : []),
     ];
-  }, [payrollAreas, payrollStatus, paymentData, paymentStatus, companyCodes, companyCodeStatus, configOutputs]);
+  }, [payrollAreas, payrollStatus, paymentData, paymentStatus, companyCodes, companyCodeStatus, taxCompanies, taxCompanyStatus, configOutputs]);
 
   // Fetch config file content when a config file is selected
   useEffect(() => {
@@ -766,11 +787,13 @@ export function ExportCenterPage() {
           return getEmptyOrGenerated(!!paymentData, () => generatePreNotificationCSV(paymentData!.preNotificationRequired));
         case 'company-code-file':
           return getEmptyOrGenerated(companyCodes.length > 0, () => generateCompanyCodeCSV(companyCodes), 'company-code');
+        case 'tax-company-file':
+          return getEmptyOrGenerated(taxCompanies.length > 0, () => generateTaxCompanyCSV(taxCompanies), 'tax-company');
         default:
           return EMPTY_CSVS[fileId] || '';
       }
     },
-    [payrollAreas, paymentData, companyCodes, editedContents, configFileContents]
+    [payrollAreas, paymentData, companyCodes, taxCompanies, editedContents, configFileContents]
   );
 
   // Get file name from ID
@@ -800,6 +823,7 @@ export function ExportCenterPage() {
       'check-range': 'check_range.csv',
       'pre-notification': 'pre_notification.csv',
       'company-code-file': 'company_code.csv',
+      'tax-company-file': 'tax_company.csv',
     };
     return fileMap[fileId] || `${fileId}.csv`;
   };
@@ -867,6 +891,11 @@ export function ExportCenterPage() {
     // Collect company code files
     if (companyCodeStatus.status !== 'not-started') {
       files.push({ name: 'company_code.csv', content: generateContent('company-code-file') });
+    }
+
+    // Collect tax company files
+    if (taxCompanyStatus.status !== 'not-started') {
+      files.push({ name: 'tax_company.csv', content: generateContent('tax-company-file') });
     }
 
     if (files.length > 0) {
@@ -1010,7 +1039,9 @@ export function ExportCenterPage() {
                     ? payrollAreas.length > 0
                     : selectedFile === 'company-code-file'
                       ? companyCodes.filter((c) => c.companyCode && c.companyName).length > 0
-                      : !!paymentData?.methods.length
+                      : selectedFile === 'tax-company-file'
+                        ? taxCompanies.length > 0
+                        : !!paymentData?.methods.length
                 : false
             }
           />
