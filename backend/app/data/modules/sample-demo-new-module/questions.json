@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "questions": [
+    {
+      "text": "What is your favorite number?",
+      "type": "multi_select",
+      "options": [
+        {
+          "value": "a",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ],
+      "outputMapping": {
+        "file": "favorite_number.csv",
+        "column": "Num",
+        "transform": "direct"
+      },
+      "id": "q_8b21803c",
+      "order": 1
+    },
+    {
+      "text": "Why is your favorite number 1?",
+      "type": "text",
+      "showIf": {
+        "questionId": "q_8b21803c",
+        "equals": "a"
+      },
+      "id": "q_6e89547f",
+      "order": 2
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-01-28T22:30:50.948273",
+    "createdBy": "admin123",
+    "lastModified": "2026-01-28T22:32:37.920371"
+  }
+}

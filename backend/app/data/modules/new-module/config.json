@@ -1,0 +1,14 @@
+{
+  "slug": "new-module",
+  "name": "New Module",
+  "description": "",
+  "category": null,
+  "icon": "box",
+  "status": "active",
+  "order": 999,
+  "version": "1.0",
+  "createdAt": "2026-01-28T21:19:09.518520",
+  "createdBy": "admin123",
+  "updatedAt": "2026-01-28T21:20:41.249566",
+  "updatedBy": "admin123"
+}

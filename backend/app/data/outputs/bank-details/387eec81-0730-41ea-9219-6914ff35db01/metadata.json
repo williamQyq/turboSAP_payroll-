@@ -1,0 +1,12 @@
+{
+  "completedAt": "2026-02-03T23:12:21.911163Z",
+  "startedAt": "2026-02-03T23:09:02.072398Z",
+  "answersCount": 4,
+  "userId": 4,
+  "sessionId": "387eec81-0730-41ea-9219-6914ff35db01",
+  "moduleSlug": "bank-details",
+  "files": [
+    "bank_details.csv",
+    "payment_methods.csv"
+  ]
+}

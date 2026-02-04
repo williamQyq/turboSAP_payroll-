@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "questions": [
+    {
+      "text": "What are your favorite letters?",
+      "type": "multi_select",
+      "options": [
+        {
+          "value": "a",
+          "label": "A"
+        },
+        {
+          "value": "b",
+          "label": "B"
+        },
+        {
+          "value": "c",
+          "label": "C"
+        },
+        {
+          "value": "d",
+          "label": "D"
+        }
+      ],
+      "outputMapping": {
+        "file": "letters.csv",
+        "column": "Letters",
+        "transform": "yes_no"
+      },
+      "id": "q_ff62a3c4",
+      "order": 1
+    },
+    {
+      "text": "Why is A your favorite letter?",
+      "type": "text",
+      "showIf": {
+        "questionId": "q_ff62a3c4",
+        "equals": "a"
+      },
+      "id": "q_a45f5d9d",
+      "order": 2
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-01-28T21:19:09.518520",
+    "createdBy": "admin123",
+    "lastModified": "2026-01-28T21:20:35.308309"
+  }
+}

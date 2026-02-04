@@ -1,0 +1,14 @@
+{
+  "slug": "sample-demo-new-module",
+  "name": "Sample Demo New Module",
+  "description": "",
+  "category": null,
+  "icon": "box",
+  "status": "active",
+  "order": 999,
+  "version": "1.0",
+  "createdAt": "2026-01-28T22:30:50.948273",
+  "createdBy": "admin123",
+  "updatedAt": "2026-01-28T22:32:48.881266",
+  "updatedBy": "admin123"
+}
