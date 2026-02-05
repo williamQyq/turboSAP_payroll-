@@ -591,9 +591,8 @@ async def submit_answer(
 @app.get("/api/session/{session_id}")
 async def get_session_state(
     session_id: str,
-    authorization: Optional[str] = Header(None),
+    current_user: Optional[dict] = Depends(get_optional_user),
 ):
-    current_user = await get_optional_user(authorization)
 
     state = None
 
