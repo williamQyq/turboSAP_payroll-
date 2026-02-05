@@ -48,11 +48,19 @@ const __dirname = path.dirname(__filename)
 const STATIC_ASSET_ROOT = Flag.OPENCODE_STATIC_ASSET_ROOT
     ? path.resolve(Flag.OPENCODE_STATIC_ASSET_ROOT)
     : path.resolve(__dirname, "../../static")
-const STATIC_INDEX_PATH = path.join(STATIC_ASSET_ROOT, "index.html")
-const STATIC_CSP =
-    "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' data:"
-// const AGENT_UI_ORIGIN = Flag.OPENCODE_AGENT_UI_ORIGIN ?? "http://localhost:4096"
+console.log(`static asset root=${STATIC_ASSET_ROOT}`);
+console.info(process.cwd());
 
+const STATIC_INDEX_PATH = path.join(STATIC_ASSET_ROOT, "index.html")
+const extraConnect = Flag.OPENCODE_AGENT_UI_ORIGIN ?? "http://127.0.0.1:4096"
+const STATIC_CSP =
+    `default-src 'self'; ` +
+    `script-src 'self' 'wasm-unsafe-eval'; ` +
+    `style-src 'self' 'unsafe-inline'; ` +
+    `img-src 'self' data: https:; ` +
+    `font-src 'self' data:; ` +
+    // Added a space after data:
+    `connect-src 'self' data: ${extraConnect};`;
 function applyStaticHeaders(response: Response) {
     response.headers.set("Content-Security-Policy", STATIC_CSP)
     return response
@@ -551,12 +559,12 @@ export namespace Server {
                         })
                     },
                 )
-                .all("/agent-ui/*", async (c) => {
-                    // "/agent/assets/x.js" -> "/assets/x.js"
-                    // "/agent/" -> "/"
-                    const pathInApp = c.req.path.replace(/^\/agent-ui(\/|$)/, "/");
+                .all("/*", async (c) => {
+                    // "/agent-ui/assets/x.js" -> "/assets/x.js"
+                    // "/agent-ui/" -> "/"
+                    // const pathInApp = c.req.path.replace(/^\/agent-ui(\/|$)/, "/");
 
-                    const staticPath = resolveStaticPath(pathInApp);
+                    const staticPath = resolveStaticPath(c.req.path);
                     if (!staticPath) return c.notFound();
 
                     const response = await createStaticResponse(staticPath);

@@ -9,6 +9,7 @@
     "typecheck": "tsgo --noEmit",
     "test": "bun test",
     "build": "bun run script/build.ts",
+    "postbuild": "echo 'copying linux x64 to uploads' && mkdir -p ../../../uploads && cp -R dist/opencode-linux-x64 ../../../uploads/",
     "dev": "bun run --conditions=browser ./src/index.ts",
     "serve": "bun run --conditions=browser ./src/index.ts serve --port 4096",
     "random": "echo 'Random script updated at $(date)' && echo 'Change queued successfully' && echo 'Another change made' && echo 'Yet another change' && echo 'One more change' && echo 'Final change' && echo 'Another final change' && echo 'Yet another final change'",

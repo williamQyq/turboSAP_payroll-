@@ -328,7 +328,7 @@ const ICON_MAPS: IconMaps = {
     packages: "FolderPackages",
     deps: "FolderPackages",
 
-    // Build/dist
+    // Build/static
     build: "FolderBuildkite",
     dist: "FolderDist",
     out: "FolderDist",

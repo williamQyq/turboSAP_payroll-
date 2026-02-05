@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const sourceDir = path.resolve(__dirname, "../dist")
-const targetDir = path.resolve(__dirname, "../../code-agent/static")
+const targetDir = path.resolve(__dirname, "../../../../uploads/static")
 
 async function exists(dir: string) {
   try {

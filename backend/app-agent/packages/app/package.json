@@ -11,7 +11,7 @@
     "typecheck": "tsgo -b",
     "start": "vite",
     "dev": "vite",
-    "build": "vite build",
+    "build":"vite build",
     "clean": "rm -rf node_modules dist",
     "postbuild": "bun script/copy-dist.ts",
     "serve": "vite preview",

@@ -10,7 +10,7 @@ export const IGNORE_PATTERNS = [
   "node_modules/",
   "__pycache__/",
   ".git/",
-  "dist/",
+  "static/",
   "build/",
   "target/",
   "vendor/",

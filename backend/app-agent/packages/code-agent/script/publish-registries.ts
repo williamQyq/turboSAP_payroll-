@@ -94,7 +94,7 @@ if (!Script.preview) {
     '      base="-baseline"',
     "    fi",
     "  fi",
-    '  bin="dist/opencode-linux-${target_arch}${base}${libc}/bin/opencode"',
+    '  bin="static/opencode-linux-${target_arch}${base}${libc}/bin/opencode"',
     '  if [ ! -f "$bin" ]; then',
     '    printf "unable to find binary for %s%s%s\\n" "$target_arch" "$base" "$libc" >&2',
     "    return 1",
@@ -180,7 +180,7 @@ if (!Script.preview) {
 
   await $`rm -rf ./dist/homebrew-tap`
   await $`git clone https://${process.env["GITHUB_TOKEN"]}@github.com/sst/homebrew-tap.git ./dist/homebrew-tap`
-  await Bun.file("./dist/homebrew-tap/opencode.rb").write(homebrewFormula)
+  await Bun.file("./static/homebrew-tap/opencode.rb").write(homebrewFormula)
   await $`cd ./dist/homebrew-tap && git add opencode.rb`
   await $`cd ./dist/homebrew-tap && git commit -m "Update to v${Script.version}"`
   await $`cd ./dist/homebrew-tap && git push`

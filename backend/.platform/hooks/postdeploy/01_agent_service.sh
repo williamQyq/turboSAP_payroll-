@@ -1,4 +1,6 @@
-cat >/etc/systemd/system/agent.service <<'EOF'
+#!/bin/bash
+
+sudo tee /etc/systemd/system/agent.service >/dev/null <<'EOF'
 [Unit]
 Description=Agent service (localhost:4096)
 After=network.target
@@ -12,6 +14,7 @@ ExecStart=/var/app/current/uploads/opencode-linux-x64/bin/opencode serve --port 
 Restart=always
 RestartSec=2
 Environment=PYTHONUNBUFFERED=1
+Environment=OPENCODE_STATIC_ASSET_ROOT=/var/app/current/uploads/static/
 
 [Install]
 WantedBy=multi-user.target

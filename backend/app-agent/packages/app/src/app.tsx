@@ -84,12 +84,26 @@ function ServerKey(props: ParentProps) {
   )
 }
 
+const resolveEnvServerUrl = () => {
+  const host = import.meta.env.VITE_OPENCODE_SERVER_HOST?.trim()
+  const port = import.meta.env.VITE_OPENCODE_SERVER_PORT?.trim()
+  const prefix = import.meta.env.VITE_OPENCODE_SERVER_PREFIX?.trim()
+
+  const protocol = window.location.protocol || "https:"
+  const base = host? `${protocol}//${host}${port ? `:${port}` : ""}`:window.location.origin;
+
+  return prefix? `${base}/${prefix}` : base;
+}
+
 export function AppInterface(props: { defaultUrl?: string }) {
   const defaultServerUrl = () => {
     if (props.defaultUrl) return props.defaultUrl
-    if (location.hostname.includes("opencode.ai")) return "http://localhost:4096"
+
     if (import.meta.env.DEV)
       return `http://${import.meta.env.VITE_OPENCODE_SERVER_HOST ?? "localhost"}:${import.meta.env.VITE_OPENCODE_SERVER_PORT ?? "4096"}`
+
+    const envServerUrl = resolveEnvServerUrl()
+    if (envServerUrl) return envServerUrl
 
     return window.location.origin
   }
